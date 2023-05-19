@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Developer Directory</title>
+  <style>
+    /* Add some basic styling */
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    input[type="text"] {
+      padding: 5px;
+      width: 200px;
+      margin-bottom: 10px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Developer Directory</h1>
+  <input type="text" id="searchByName" placeholder="Search by name">
+  <input type="text" id="filterByDesignation" placeholder="Filter by designation/skill">
+  <table id="developersTable"></table>
+
+  <script>
+    // Fetch JSON data from the provided source
+    fetch('https://raw.githubusercontent.com/dixitsoham7/dixitsoham7.github.io/main/index.json')
+      .then(response => response.json())
+      .then(data => {
+        renderDevelopers(data); // Render developers on the screen
+        setupEventListeners(data); // Set up filter/search event listeners
+      })
+      .catch(error => console.error(error));
+
+    function renderDevelopers(data) {
+      const table = document.getElementById('developersTable');
+
+      // Create table headers
+      const headers = Object.keys(data[0]);
+      const headerRow = document.createElement('tr');
+      headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+      });
+      table.appendChild(headerRow);
+
+      // Create table rows with developer information
+      data.forEach(developer => {
+        const row = document.createElement('tr');
+        headers.forEach(header => {
+          const cell = document.createElement('td');
+          cell.textContent = developer[header];
+          row.appendChild(cell);
+        });
+        table.appendChild(row);
+      });
+    }
+
+    function setupEventListeners(data) {
+      const searchByNameInput = document.getElementById('searchByName');
+      const filterByDesignationInput = document.getElementById('filterByDesignation');
+      const developersTable = document.getElementById('developersTable');
+
+      // Event listener for search by name
+      searchByNameInput.addEventListener('input', () => {
+        const searchQuery = searchByNameInput.value.trim().toLowerCase();
+        filterDevelopers(searchQuery, filterByDesignationInput.value.trim().toLowerCase());
+      });
+
+      // Event listener for filter by designation/skill
+      filterByDesignationInput.addEventListener('input', () => {
+        const filterQuery = filterByDesignationInput.value.trim().toLowerCase();
+        filterDevelopers(searchByNameInput.value.trim().toLowerCase(), filterQuery);
+      });
+
+      function filterDevelopers(nameQuery, designationQuery) {
+        const filteredDevelopers = data.filter(developer => {
+          const nameMatch = developer.name.toLowerCase().includes(nameQuery);
+          const designationMatch = developer.designation.toLowerCase().includes(designationQuery);
+          return nameMatch && designationMatch;
+        });
+
+        // Clear the table
+        while (developersTable.firstChild) {
+          developersTable.removeChild(developersTable.firstChild);
+        }
+
+        // Render the filtered developers
+        renderDevelopers(filteredDevelopers);
+      }
+    }
+  </script>
+</body>
+</html>
